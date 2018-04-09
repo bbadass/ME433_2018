@@ -1,4 +1,13 @@
 Things to do:
-1: 
-2: 
-3:
+1: Ground the Pololu USB mini-B  
+2: Ground the MCP1702 voltage regulator
+3: Connect the IN of the voltage regulator to the Pololu USB OUT
+4: Connect the OUT of the voltage regulator to provide 3.3V power to the + rail of the breadboard
+5: Connect an LED to the 3.3V rail of the breadboard in series with a 330 Ohm resistor between the LED and ground
+6: Measure the current on the breadboard rails with an oscillator and take a picture
+7: Connect a 10 micro Farad capactor in parallel between the ground and OUT of the voltage regulator
+8: Connect a 1 micro Farad capactior in parallel between the ground and IN of the voltage regulator 
+9: Keep measuring the signal with an oscillator and report wavechanges
+10: Turn the power off
+11: Connect the PIC32's VCAP to ground, in series with a 10 micro Farad capacitor
+12:
