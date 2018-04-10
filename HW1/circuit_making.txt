@@ -15,8 +15,8 @@ Things to do:
 14: Connect the PIC32's VSS, AVDD and AVSS pins to ground (pin 8, 27)
 15: Connect a 0.1uF capacitor between VDD and VSS pairs (pins 27 and 28) 
 16: Connect an LED to the PIC32's A4 (pin 12), in series with a 300 Ohm resistor
-17: Connect the PIC32's PGED1 pin (pin 4) to pin 5 in the ICSP 
-18: Connect the PIC32's PGEC1 pin (pin 5) to pin 4 in the ICSP
+17: Connect the PIC32's PGED1 pin (pin 4) to pin 4 in the ICSP 
+18: Connect the PIC32's PGEC1 pin (pin 5) to pin 5 in the ICSP
 19: Connect pin 3 in the ICSP to ground
 20: Connect pin 2 in the ICSP to 3.3V
 21: Connect pin 1 in the ICSP to 3.3V in series with a 10kOhm resistor
