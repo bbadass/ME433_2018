@@ -28,5 +28,5 @@ Things to do:
 27: Connect the PIC2's VUSB3V3 pin (pin 23) to 3.3V
 28: Connect the PIC32's D+ pin (pin 21) to the Poulou USB D+ pin
 29: Connect the PIC32's D- pin (pin 22) to the Poulou USB D- pin
-30: Connect the PIC32's B4 pin (pin ) to a push button in series with a 10kOhm resistor connected to 3.3V, and with the other end connected to ground
+30: Connect the PIC32's B4 pin (pin 12) to a push button in series with a 10kOhm resistor connected to 3.3V, and with the other end connected to ground
 31: Verify a clear signal -> Verified
