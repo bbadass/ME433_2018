@@ -45,6 +45,6 @@ Things to do:
 44: Connect VSS (pin 9) in the MCP23 to ground
 45: Connect RESET (pin 6) in the MCP32 to MCLR (pin 1) in the PIC32
 46: Connect VDD (pin 18) in the MCP32 to 3.3V
-47: Connect GP7 (pin 17) in the MCP23 to B4 (pin 11) in the PIC32
+47: Connect GP7 (pin 17) in the MCP23 to a push button, one end of which is grounded, and the other one connected ton 3.3V in series with a 10kOhm resistor
 48: Connect GP0 to an LED in series with a 300Ohm resistor connected to ground
 
