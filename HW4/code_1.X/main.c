@@ -57,11 +57,11 @@
     t = a<< 15; //go back to bit 1 to set channel
     
     t = t | 0b0111000000000000; //the output is a 16 bit number, where the first four set identifiers to set properties, and the last two
-    t = t | ((v&0b1111111111)<<2); //2nd 8 bit number describing the mAx voltage of 3.3V, last two bits are inactive, first ten set voltage
+    t = t | ((v&0b1111111111)<<2); //10 bit number limiting the max voltage to 3.3V, last two bits are inactive, first 8 set voltage
     
     CS=0; //lower the chip select line and enable the MCP
-    spi_io(t>>8); //
-    spi_io(t&0xFF); //
+    spi_io(t>>8); //send the first 8 bits: send t, go back by 8 bits
+    spi_io(t&0xFF); //send last eight bits: first eight are zeros
     CS = 1; //disable the MCP
     }
 
@@ -113,16 +113,27 @@ int main() {
     spi_init();
     
     __builtin_enable_interrupts();
-    
-    int i =0;
+        
+    float a=512;
+    float b=0;
+    float db=5.12;
     
     while(1) {
         _CP0_SET_COUNT(0); // PIC timing set to zero  
         
-        setVoltage(0,512); //channel A set to 1.65V
-        setVoltage(1,512/2); //channel B set to 0.825V      
+        setVoltage(1,a); //channel A set to 1.65V
         
-         while(_CP0_GET_COUNT()< 2400000){ //while loop with frequency 1kHz
+        setVoltage(0,b); //channel B set to 0.825V     
+        
+        b=b+db; //slowly increase b such that half a triangle of 3.3V height is constructed in 100ms (b uodated every 1ms)
+        if (b>512){ //when reached top of triangle start going down
+            db=-db;
+        }
+        if (b<1){ //when reached bottom of triangle start going back up
+            db=-db;
+        }
+        
+         while(_CP0_GET_COUNT()< 24000){ //while loop with frequency 1kHz
                       }
     }
 }
