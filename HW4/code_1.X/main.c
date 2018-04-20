@@ -1,4 +1,5 @@
 #include<xc.h>           // processor SFR definitions
+#include<math.h>        //mathematical functions
 #include<sys/attribs.h>  // __ISR macro
 
 // DEVCFG0
@@ -37,7 +38,7 @@
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
 
-#define CS LATAbits.LATA0
+#define CS LATAbits.LATA0 //define channel identifier
 
 
 // function to send a byte via SPI and return the response
@@ -114,7 +115,9 @@ int main() {
     
     __builtin_enable_interrupts();
         
-    float a=512;
+    double a=0;
+    double x=0;
+    double dx = 0.0314*2;
     float b=0;
     float db=5.12;
     
@@ -124,6 +127,9 @@ int main() {
         setVoltage(1,a); //channel A set to 1.65V
         
         setVoltage(0,b); //channel B set to 0.825V     
+        
+        a = 512/2 + 512/2*sin(x);
+        x=x+dx;
         
         b=b+db; //slowly increase b such that half a triangle of 3.3V height is constructed in 100ms (b uodated every 1ms)
         if (b>512){ //when reached top of triangle start going down
