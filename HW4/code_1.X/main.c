@@ -38,32 +38,30 @@
 
 
 #define CS LATAbits.LATA0
-#define SCK LATBbits.LATB14
-#define SDOI LATAbits.LATA1
 
 
 // function to send a byte via SPI and return the response
     unsigned char spi_io(unsigned char o) {
-  SPI4BUF = o;
-  while(!SPI4STATbits.SPIRBF) { // wait to receive the byte
+  SPI1BUF = o;
+  while(!SPI1STATbits.SPIRBF) { // wait to receive the byte
     ;
   }
-  return SPI4BUF;
+  return SPI1BUF;
     }
       
     
-    //function to set the voltage 
+    //function to set the voltage (inputs are channel number and voltage in binary: note 3.3 V is 1023 in binary)
     void setVoltage (char a, int v) {
-    unsigned short t;
+    unsigned short t; //variable for the output
     
-    t = a<< 15;
+    t = a<< 15; //go back to bit 1 to set channel
     
-    t = t | 0b0111000000000000; //1st 8 bit number describing the channel is four set identifiers plus 4 user chosen ones
-    t = t | ((v&0b1111111111)<<2); //2nd 8 bit number describing the voltage v is a 10 bit string shifted back by two bits 
+    t = t | 0b0111000000000000; //the output is a 16 bit number, where the first four set identifiers to set properties, and the last two
+    t = t | ((v&0b1111111111)<<2); //2nd 8 bit number describing the mAx voltage of 3.3V, last two bits are inactive, first ten set voltage
     
     CS=0; //lower the chip select line and enable the MCP
-    spi_io(t<<8); //shift
-    spi_io(t&0xFF); //shift
+    spi_io(t>>8); //
+    spi_io(t&0xFF); //
     CS = 1; //disable the MCP
     }
 
@@ -78,19 +76,15 @@
   // since the pic is just starting, we know that spi is off. We rely on defaults here
  
   // setup spi4
-  SPI4CON = 0;              // turn off the spi module and reset it
-  SPI4BUF;                  // clear the rx buffer by reading from it
-  SPI4BRG = 0x3;            // baud rate to 10 MHz [SPI4BRG = (80000000/(2*desired))-1]
-  SPI4STATbits.SPIROV = 0;  // clear the overflow bit
-  SPI4CONbits.CKE = 1;      // data changes when clock goes from hi to lo (since CKP is 0)
-  SPI4CONbits.MSTEN = 1;    // master operation
-  SPI4CONbits.ON = 1;       // turn on spi 4
-
-                            // send a ram set status command.
-  CS = 0;                   // enable the ram
-  spi_io(0x01);             // ram write status
-  spi_io(0x41);             // sequential mode (mode = 0b01), hold disabled (hold = 0)
-  CS = 1;                   // finish the command
+  RPA1Rbits.RPA1R = 0b0011; //set pin A1 as output SDO1
+  SPI1CON = 0;              // turn off the spi module and reset it
+  SPI1BUF;                  // clear the rx buffer by reading from it
+  SPI1BRG = 03;            // baud rate to 10 MHz [SPI4BRG = (80000000/(2*desired))-1]
+  SPI1STATbits.SPIROV = 0;  // clear the overflow bit
+  SPI1CONbits.CKE = 1;      // data changes when clock goes from hi to lo (since CKP is 0)
+  SPI1CONbits.MSTEN = 1;    // master operation
+  SPI1CONbits.ON = 1;       // turn on spi 4
+                  
 }
     
 int main() {
@@ -120,14 +114,15 @@ int main() {
     
     __builtin_enable_interrupts();
     
+    int i =0;
     
     while(1) {
         _CP0_SET_COUNT(0); // PIC timing set to zero  
         
-        setVoltage(0,512); //channel A is a sine wave
-        setVoltage(0,512/2); //channel B is a triangle wave        
+        setVoltage(0,512); //channel A set to 1.65V
+        setVoltage(1,512/2); //channel B set to 0.825V      
         
-         while(_CP0_GET_COUNT()< 24000){ //while loop with frequency 1kHz
+         while(_CP0_GET_COUNT()< 2400000){ //while loop with frequency 1kHz
                       }
     }
 }
