@@ -37,23 +37,23 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
-void write_i2c(unsigned char reg, unsigned char val){
+void write_i2c(unsigned char add, unsigned char val){
     i2c_master_start();                      //begin the start sequence
     i2c_master_send(0b0100000 << 1|0);       // send the slave address of the register, left shifted by 1, clearing last bit and setting it to 0 indicating to write
-    i2c_master_send(reg);                    //send the adress
+    i2c_master_send(add);                    //send the adress
     i2c_master_send(val);                    //send the bits
     i2c_master_stop();                       //stop sequence
     
 }
 
-void read_i2c(){
+unsigned char read_i2c(){
     i2c_master_start();                      //begin the start sequence
     i2c_master_send(0b0100000 << 1|0);       // send the slave address, left shifted by 1, clearing last bit and setting it to 0 indicating to write
-    i2c_master_send(0x09);                   //send the address of the register
-    i2c_master_restart();                    //send the bits
+    i2c_master_send(0x09);                   //send the address of the general purpose i/o register
+    i2c_master_restart();                    //restart
     i2c_master_send(0b0100000 << 1|1);       // send the slave address, left shifted by 1, clearing last bit and setting it to 1 indicating to write
     unsigned char r = i2c_master_recv();     //save the output of the slave
-    i2c_master_ack(1);
+    i2c_master_ack(1);                       //done talking to the chip (0 if not sone but just recieved))
     i2c_master_stop();                      //stop sequence
     return r;                               //return the value read by the chip
 }
@@ -88,11 +88,17 @@ int main() {
     TRISBbits.TRISB4=1; // B4 i an input
     TRISAbits.TRISA4=0; //A4 is an output
     LATAbits.LATA4=1; //A4 initially set to 3.3V
-
-    initExp(); //initialize MCP23
+    
+        initExp(); //initialize MCP23
     
     __builtin_enable_interrupts();
-        
+   
+     _CP0_SET_COUNT(0);
+                
+        //make LED connected to A4 blink every half second
+         while(_CP0_GET_COUNT()<24000000){ 
+         }   
+    
     while(1) {
         
         _CP0_SET_COUNT(0);
@@ -107,7 +113,10 @@ int main() {
              LATAbits.LATA4=0;
          }
          
-         write_i2c(0x0A,0b00000001);
+         if ((read_i2c())>> 7 == 1){// if the output from G7 is high (button not pushed) (got the whole bit number, shift back by 7, so you only get first bit, which is G7)
+         write_i2c(0x0A,0b00000001);} //make LED on
+         else { //if out from G7 is low (button pushed)
+             write_i2c(0x0A,0b00000000);} //make LED off
          
     }
 }
