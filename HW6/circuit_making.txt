@@ -1,0 +1,57 @@
+Things to do:
+1: Ground the Pololu USB mini-B  
+2: Ground the MCP1702 voltage regulator
+3: Connect the IN of the voltage regulator to the Pololu USB OUT
+4: Connect the OUT of the voltage regulator to provide 3.3V power to the + rail of the breadboard
+5: Connect an LED to the 3.3V rail of the breadboard in series with a 330 Ohm resistor between the LED and ground
+6: Measure the current on the breadboard rails with an oscillator and take a picture
+7: Connect a 10 micro Farad capactor in parallel between the ground and OUT of the voltage regulator
+8: Connect a 1 micro Farad capactior in parallel between the ground and IN of the voltage regulator 
+9: Keep measuring the signal with an oscillator and report wavechanges -> The signal has lower amplitude oscillatiosn when the diode is inserted, and the oscillatios go away when the 10uF capacitor is inserted, the 1uF (which in this case is 0.1uF) capacitor does not make a difference in the signal.
+10: Turn the power off
+11: Connect the PIC32's VCAP (pin 20) to ground, in series with a 10 micro Farad capacitor
+12: Connect the PIC32's MLR (pin 1) to the ICSP's pin 1
+13: Connect the PIC32's VDD pins to 3.3V (pin 13, 28)
+14: Connect the PIC32's VSS, AVDD and AVSS pins to ground (pin 8, 27)
+15: Connect a 0.1uF capacitor between VDD and VSS pairs (pins 27 and 28) 
+16: Connect an LED to the PIC32's A4 (pin 12), in series with a 300 Ohm resistor
+17: Connect the PIC32's PGED1 pin (pin 4) to pin 4 in the ICSP 
+18: Connect the PIC32's PGEC1 pin (pin 5) to pin 5 in the ICSP
+19: Connect pin 3 in the ICSP to ground
+20: Connect pin 2 in the ICSP to 3.3V
+21: Connect pin 1 in the ICSP to 3.3V in series with a 10kOhm resistor
+22: Connect the PIC32's MLR (pin 1) to a reset button connected to ground
+23: Connect the PIC32's OSC1 (pin 9) to one of the outer pins of the resonator
+24: Connect the PIC32's OSC2 (pin 10) to the other outer pin of the resonator
+25: Connect the middle pin of the resonator to ground
+26: Connect the PIC32's VBUS pin (pin 15) to 5V
+27: Connect the PIC2's VUSB3V3 pin (pin 23) to 3.3V
+28: Connect the PIC32's D+ pin (pin 21) to the Poulou USB D+ pin
+29: Connect the PIC32's D- pin (pin 22) to the Poulou USB D- pin
+30: Connect the PIC32's B4 pin (pin 12) to a push button in series with a 10kOhm resistor connected to 3.3V, and with the other end connected to ground
+31: Verify a clear signal -> Verified
+32: Connect the VSS (pin 12) in the MCP92 to ground
+33: Connect the VDD (pin 1) in the MCP92 to 3.3V
+34: Connect CS (pin 3) in the MCP92 to A0 (pin 2) in the PIC32
+35: Connect SCK (pin 4) in the MCP92 to B14 (pin 25) in the PIC32
+36: Connect SDI (pin 5) in the MCP92 to A1 (pin 3) in the PIC32
+37: Connec VREFA and VREFB (pins 13 and 11) in the MCP92 to 3.3V
+38: Leave OUTA and OUTB (pins 14 and 10) without conncetions and read the output voltage with the oscilloscope
+39: Connect LDAC (pin 8) in the MCP92 to ground
+40: Connect SHDN (pin 9) in the MCP92 to 3.3V
+41: Connect SCK (pin 1) in the MCP23 to B2 (pin 6) in the PIC 32, and in series with a 10kOhm connected to ground
+42: Connect SDA (pin 2) in the MCP23 to B3 (pin 7) in the PIC32, and in series with a 10kOhm resistor connected to ground
+43: Connect S0, A1 and A0 (pins 3,4,5) in the MCP23 to ground
+44: Connect VSS (pin 9) in the MCP23 to ground
+45: Connect RESET (pin 6) in the MCP32 to MCLR (pin 1) in the PIC32
+46: Connect VDD (pin 18) in the MCP32 to 3.3V
+47: Connect GP7 (pin 17) in the MCP23 to a push button, one end of which is grounded, and the other one connected ton 3.3V in series with a 10kOhm resistor
+48: Connect GP0 to an LED in series with a 300Ohm resistor connected to ground
+49: Connect the LED pin (pin 8) in the LCD to 3.3v
+50: Connect the SCK (pin 7) in the LCD to B14 (pin 25) in the PIC32
+51: Connect the SDA (pin 6) in the LCD to A1 (pin 3) in the PIC32
+52: Connect the A0 (pin 5) in the LCD to B15 (pin 26) in the PIC32
+53: Connect the RESET (pin 4) in the LCD to 3.3V
+54: Connect the CS (pin 3) in the LDC to B7 (pin 16) in the PIC32
+55: Connect the GND (pin 2) in the LCD to ground
+56: Connect the VCC (pin 1) in the LCD to 3.3V
