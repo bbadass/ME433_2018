@@ -91,13 +91,7 @@ int main() {
     
         initExp(); //initialize MCP23
     
-    __builtin_enable_interrupts();
-   
-     _CP0_SET_COUNT(0);
-                
-        //make LED connected to A4 blink every half second
-         while(_CP0_GET_COUNT()<24000000){ 
-         }   
+    __builtin_enable_interrupts();  
     
     while(1) {
         
