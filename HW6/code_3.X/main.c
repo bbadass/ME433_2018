@@ -38,6 +38,61 @@
 #pragma config FUSBIDIO = ON // USB pins controlled by USB module
 #pragma config FVBUSONIO = ON // USB BUSON controlled by USB module
 
+//function to write single characters on the LCD
+void writeCharacter(unsigned short x, unsigned short y, char letter, unsigned short color_on, unsigned short color_off){
+    
+    unsigned short xi=0;   
+    unsigned short yi=0;
+    
+    for (xi=0; xi<5; xi++) { //loop over the five pixels (in x) per character
+        
+        unsigned char pixels = ASCII[letter - 0x20][xi];
+     
+        for (yi=0; yi<8 ; yi++){ //loop over bits of each character (8 pixels in y)
+            if ((pixels >> yi ) & 1) { // if the yith bit of the ascii (shift back by yi) is on, turn the pixel on
+                LCD_drawPixel(x+xi, y+yi, color_on);
+            }
+            else{ // if the yith bit of the ascii (shift back by yi) is off, color the pixel of the off color
+                LCD_drawPixel(x+xi, y+yi, color_off);
+            }
+        }
+    }
+    
+    }
+
+//function to write messages composed of multiple characters on the LCD
+void writeString(unsigned short x, unsigned short y, unsigned char* words, unsigned short color_on, unsigned short color_off){
+        
+    unsigned int i=0;
+    
+    while (words[i]) { //run until there is a character, which works because sprintf has a null zero as its last character 
+    writeCharacter(x+5*i, y, words[i], color_on, color_off); //shift by 5 pixels per letter
+    i++;
+    }
+    
+    }
+    
+    
+    //function to draw bars on the LCD
+    void drawBar(unsigned short x, unsigned short y, unsigned short n1, unsigned short color_on, unsigned short color_off, unsigned int length){
+       
+        unsigned short ni1=0;
+        unsigned short ni2=0;
+        unsigned short yi=0;
+        
+        for(yi=0; yi<=length; yi++){ //loop over length of the bar
+        for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
+                LCD_drawPixel(x+ni1, y+yi, color_on);
+        }
+        for (ni2=n1; ni2<100 ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                LCD_drawPixel(x+ni2, y+yi, color_off);
+        }
+        }
+    }
+    
+
+
+
 int main() {
 
     __builtin_disable_interrupts();
@@ -61,21 +116,37 @@ int main() {
     
     LCD_init(); //initialize LCD
     
-    __builtin_enable_interrupts();  
+    __builtin_enable_interrupts(); 
+    
+    
+    unsigned char message [20]; //array that is going to contain the  hello world message (remember to save one extra character for the zero in sprint f)
+    unsigned char bar_number [4]; //array that is going to contain the number indicating the progress in the progress bar (remember to save one extra character for the zero in sprint f)
+    unsigned short n = 0; //number that stores the progress of the progress bar
+    sprintf(message, "Ciao Mamma <3");
+    
+    LCD_clearScreen(BLACK); //turn the whole screen back
     
     while(1) {
         
         _CP0_SET_COUNT(0);
-                
-        //make LED connected to A4 blink every half second
-         while(_CP0_GET_COUNT()<24000000/5){ 
-             LATAbits.LATA4=1;
-         }
-         _CP0_SET_COUNT(0);
-                 
-        while(_CP0_GET_COUNT()<24000000/5){
-             LATAbits.LATA4=0;
-         }
          
+        
+         writeString(28, 32, message, WHITE, BLACK); //write hello world starting from pixel at x=28 y=32
+         
+         
+         while(_CP0_GET_COUNT()<24000000/10){ //update bar and progress number at a 10 Hz frequency
+             
+            sprintf(bar_number, "%d", n); 
+             
+            writeString(20, 70, bar_number, YELLOW, BLACK); //write progress number starting from pixel at x=85 y=32
+         
+            drawBar(20, 80, n, YELLOW, BLUE, 20); //draw progress bar starting from pixel at x=13 y=80
+            
+            n++;
+            
+            if(n==100){ //reset n to zero when the bar is full
+                n=0;
+            }
+         }
     }
 }
