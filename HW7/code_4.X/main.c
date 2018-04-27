@@ -91,34 +91,54 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
     }
     
 
-void write_i2c(unsigned char add, unsigned char val){
+void write_i2c(unsigned char add, unsigned char reg, unsigned char val){
     i2c_master_start();                      //begin the start sequence
-    i2c_master_send(0b0100000 << 1|0);       // send the slave address of the register, left shifted by 1, clearing last bit and setting it to 0 indicating to write
-    i2c_master_send(add);                    //send the adress
+    i2c_master_send(add << 1|0);       // send the slave address of the register, left shifted by 1, clearing last bit and setting it to 0 indicating to write
+    i2c_master_send(reg);                    //send the adress
     i2c_master_send(val);                    //send the bits
     i2c_master_stop();                       //stop sequence
     
 }
 
-unsigned char read_i2c(){
+unsigned char read_i2c(unsigned char add, unsigned char reg){
     i2c_master_start();                      //begin the start sequence
-    i2c_master_send(0b0100000 << 1|0);       // send the slave address, left shifted by 1, clearing last bit and setting it to 0 indicating to write
-    i2c_master_send(0x09);                   //send the address of the general purpose i/o register
+    i2c_master_send(add << 1|0);       // send the slave address, left shifted by 1, clearing last bit and setting it to 0 indicating to write
+    i2c_master_send(reg);                   //send the address of the general purpose i/o register
     i2c_master_restart();                    //restart
-    i2c_master_send(0b0100000 << 1|1);       // send the slave address, left shifted by 1, clearing last bit and setting it to 1 indicating to write
+    i2c_master_send(add << 1|1);       // send the slave address, left shifted by 1, clearing last bit and setting it to 1 indicating to write
     unsigned char r = i2c_master_recv();     //save the output of the slave
     i2c_master_ack(1);                       //done talking to the chip (0 if not sone but just recieved))
     i2c_master_stop();                      //stop sequence
     return r;                               //return the value read by the chip
 }
+
+unsigned char read_multiple_i2c(unsigned char add, unsigned char reg1, unsigned char* outs, unsigned int length){
+    i2c_master_start();                      //begin the start sequence
+    i2c_master_send(add << 1|0);       // send the slave address, left shifted by 1, clearing last bit and setting it to 0 indicating to write
+    i2c_master_send(reg1);                   //send the address of the general purpose i/o register
+    i2c_master_restart();                    //restart
+    i2c_master_send(add << 1|1);       // send the slave address, left shifted by 1, clearing last bit and setting it to 1 indicating to write
+    unsigned int i=0;
+    for (i=0; i++; i=length) {               //loop over all reading registers
+    outs[i] = i2c_master_recv();             //save the output of the slave
+    if(i==length){                           //when the loop reaches the last value
+    i2c_master_ack(1);                       //not done talking to the chip 
+    }
+    else {                                   //for every other value read out
+    i2c_master_ack(0);                       //done talking to the chip  
+    }
+    }
+    i2c_master_stop();                      //stop sequence
+}
     
+//initialize LSM
 void initExp (){
     ANSELBbits.ANSB2 = 0; //make B2 output digital
     ANSELBbits.ANSB3 = 0; //make B3 output digital
     
     i2c_master_setup();
-    write_i2c(0x00,0b11110000); //communicate with I/O direction register and tell it to make first four chips input (G7 to G4) and the last four output (G3 to G0))
-    write_i2c(0x0A,0b00001111); //communicate with output LATCH register and tell it to turn all the output pins on                     
+    //write_i2c(0b1101011,0x00,0b11110000); //communicate with I/O direction register and tell it to make first four chips input (G7 to G4) and the last four output (G3 to G0))
+    //write_i2c(0b1101011, ,0b00001111); //communicate with output LATCH register and tell it to turn all the output pins on                     
     
 }
 
@@ -152,31 +172,28 @@ int main() {
     unsigned char message [20]; //array that is going to contain the  hello world message (remember to save one extra character for the zero in sprint f)
     unsigned char bar_number [4]; //array that is going to contain the number indicating the progress in the progress bar (remember to save one extra character for the zero in sprint f)
     unsigned short n = 0; //number that stores the progress of the progress bar
-    sprintf(message, "Ciao Mamma <3");
+    //sprintf(message, "Ciao Mamma <3");
     
     LCD_clearScreen(BLACK); //turn the whole screen back
     
     while(1) {
         
         _CP0_SET_COUNT(0);
-         
-        
-         writeString(28, 32, message, WHITE, BLACK); //write hello world starting from pixel at x=28 y=32
-         
-         
-         while(_CP0_GET_COUNT()<24000000/10){ //update bar and progress number at a 10 Hz frequency
-             
-            sprintf(bar_number, "%d", n); 
-             
-            writeString(20, 70, bar_number, YELLOW, BLACK); //write progress number starting from pixel at x=85 y=32
-         
-            drawBar(20, 80, n, YELLOW, BLUE, 20); //draw progress bar starting from pixel at x=13 y=80
-            
-            n++;
-            
-            if(n==100){ //reset n to zero when the bar is full
-                n=0;
-            }
+                
+        //make LED connected to A4 blink every half second
+         while(_CP0_GET_COUNT()<24000000/5){ 
+             LATAbits.LATA4=1;
          }
+         _CP0_SET_COUNT(0);
+                 
+        while(_CP0_GET_COUNT()<24000000/5){
+             LATAbits.LATA4=0;
+         }
+         
+         sprintf(message, "%d" , read_i2c(0b1101011,0x0F)); //read whoami   
+        
+         writeString(28, 32, message, WHITE, BLACK); //write whoami starting from pixel at x=28 y=32
+         
+         
     }
 }
