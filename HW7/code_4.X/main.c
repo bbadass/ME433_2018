@@ -74,19 +74,115 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
     
     
     //function to draw bars on the LCD
-    void drawBar(unsigned short x, unsigned short y, unsigned short n1, unsigned short color_on, unsigned short color_off, unsigned int length){
+    void drawBarO(unsigned short x, unsigned short y, signed short n1, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, unsigned int n1max){
        
         unsigned short ni1=0;
         unsigned short ni2=0;
         unsigned short yi=0;
+        signed short length_max_v = length/2;
         
-        for(yi=0; yi<=length; yi++){ //loop over length of the bar
-        for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
-                LCD_drawPixel(x+ni1, y+yi, color_on);
+        for(yi=0; yi<=width; yi++){ //loop over length of the bar
+            
+            if(n1>0){
+                 for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x-ni2, y+yi, color_off);
+                      }  
+                if (n1<length_max_v){
+                    for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+ni1, y+yi, color_on);
+                    }
+                     for (ni2=n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+ni2, y+yi, color_off);
+                      }     
+                     }
+                 
+                else{
+                     for (ni1=0; ni1<=length_max_v ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+ni1, y+yi, color_on);
+                    }
+                    }
+                
+            }
+            
+           
+            if(n1<0){
+                for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+ni2, y+yi, color_off);
+                      } 
+                if (-n1<length_max_v){
+                    for (ni1=0; ni1<=-n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x-ni1, y+yi, color_on);
+                    }
+                     for (ni2=-n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x-ni2, y+yi, color_off);
+                     }
+                     }
+                 
+                else{
+                     for (ni1=0; ni1<=length_max_v ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x-ni1, y+yi, color_on);
+                    }
+                 }
+            }
+            
+        
+        
         }
-        for (ni2=n1; ni2<100 ; ni2++){ //loop over n2 values of n (color off of the bar background)
-                LCD_drawPixel(x+ni2, y+yi, color_off);
-        }
+    }
+    
+    void drawBarV(unsigned short x, unsigned short y, signed short n1, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, unsigned int n1max){
+       
+        unsigned short ni1=0;
+        unsigned short ni2=0;
+        unsigned short xi=0;
+        signed short length_max_v = length/2;
+        
+        for(xi=0; xi<=width; xi++){ //loop over length of the bar
+            
+            if(n1>0){
+                 for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x-xi, y+ni2, color_off);
+                      }  
+                if (n1<length_max_v){
+                    for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+xi, y+ni1, color_on);
+                    }
+                     for (ni2=n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+xi, y+ni2, color_off);
+                      }     
+                     }
+                 
+                else{
+                     for (ni1=0; ni1<=length_max_v ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+xi, y+ni1, color_on);
+                    }
+                    }
+                
+            }
+            
+           
+            if(n1<0){
+                for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+xi, y+ni2, color_off);
+                      } 
+                if (-n1<length_max_v){
+                    for (ni1=0; ni1<=-n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+xi, y-ni1, color_on);
+                    }
+                     for (ni2=-n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+xi, y-ni2, color_off);
+                     }
+                     }
+                 
+                else{
+                     for (ni1=0; ni1<=length_max_v ; ni1++){ //loop over n1 values of n (color on of the bar)
+                     LCD_drawPixel(x+xi, y-ni1, color_on);
+                    }
+                 }
+            }
+            
+        
+        
         }
     }
     
@@ -119,7 +215,7 @@ unsigned char read_multiple_i2c(unsigned char add, unsigned char reg1, unsigned 
     i2c_master_restart();                    //restart
     i2c_master_send(add << 1|1);       // send the slave address, left shifted by 1, clearing last bit and setting it to 1 indicating to write
     unsigned int i=0;
-    for (i=0; i++; i=length) {               //loop over all reading registers
+    for (i=0; i<=length; i++) {               //loop over all reading registers
     outs[i] = i2c_master_recv();             //save the output of the slave
     if(i==length){                           //when the loop reaches the last value
     i2c_master_ack(1);                       //not done talking to the chip 
@@ -137,8 +233,9 @@ void initExp (){
     ANSELBbits.ANSB3 = 0; //make B3 output digital
     
     i2c_master_setup();
-    //write_i2c(0b1101011,0x00,0b11110000); //communicate with I/O direction register and tell it to make first four chips input (G7 to G4) and the last four output (G3 to G0))
-    //write_i2c(0b1101011, ,0b00001111); //communicate with output LATCH register and tell it to turn all the output pins on                     
+    write_i2c(0b1101011,0x12,0b00000100); //communicate with crl3_c and set ifing (6th bit) to 1, which allows to read multiple registers in a row
+    write_i2c(0b1101011,0x10,0b10000010); //communicate with ctrl1_xl and set the sample rate to 1.66 kHz (first four bits 1000), with 2g sensitivity (fifth and sixth bits to 00), and 100 Hz filter (last two bits to 10).
+    write_i2c(0b1101011,0x11,0b10001100); //communicate with ctrl2_g and set the sample rate to 1.66 kHz (first four bits 1000), with with 1000 dps sensitivity (5th and 6th bits to 11)
     
 }
 
@@ -168,16 +265,25 @@ int main() {
     
     __builtin_enable_interrupts(); 
     
+    unsigned char message [20];
+    unsigned char message1 [20]; //array that is going to contain the temperature (remember to save one extra character for the zero in sprint f)
+    unsigned char message2 [20];
+    unsigned char message3 [20];
+    unsigned char message4 [20];
+    unsigned char message5 [20];
     
-    unsigned char message [20]; //array that is going to contain the  hello world message (remember to save one extra character for the zero in sprint f)
-    unsigned char bar_number [4]; //array that is going to contain the number indicating the progress in the progress bar (remember to save one extra character for the zero in sprint f)
-    unsigned short n = 0; //number that stores the progress of the progress bar
+    
+    
+    unsigned char bar_number_x [4]; //array that is going to contain the number indicating the acc
+    signed short n = -10; //number that stores the progress of the progress bar
+    unsigned char data [30]; //array that stores the output data from the LSM
     //sprintf(message, "Ciao Mamma <3");
     
     LCD_clearScreen(BLACK); //turn the whole screen back
-    
+    //sprintf(message1, "Ciao Mamma <3");
+    //writeString(28, 32, message1, WHITE, BLACK); 
     while(1) {
-        
+       
         _CP0_SET_COUNT(0);
                 
         //make LED connected to A4 blink every half second
@@ -189,11 +295,48 @@ int main() {
         while(_CP0_GET_COUNT()<24000000/5){
              LATAbits.LATA4=0;
          }
+         _CP0_SET_COUNT(0);
          
-         sprintf(message, "%d" , read_i2c(0b1101011,0x0F)); //read whoami   
+         //sprintf(message, "%d" , read_i2c(0b1101011,0x0F)); //read whoami   
         
-         writeString(28, 32, message, WHITE, BLACK); //write whoami starting from pixel at x=28 y=32
+         //writeString(28, 32, message, WHITE, BLACK); //write whoami starting from pixel at x=28 y=32
          
+        while(_CP0_GET_COUNT()<24000000/20){ //read at a 20 Hz frequency
          
+        read_multiple_i2c(0b1101011,0x20,data,14); //read the seven consecutive registers indicating temperature, acceleration in xyz, and angular velocity in xyz
+         
+        //signed short temp = data[1]<< 8 | data [0]; //temperature is given by two 8 bits number, store the second one, then shift on by 8 bits and store the first one
+        signed short acc_x = data[3]<< 8 | data [2];
+        signed short acc_y = data[5]<< 8 | data [4];
+        signed short gyro_x = data[9]<< 8 | data [8];
+        signed short gyro_y = data[12]<< 8 | data [11];
+         
+         //sprintf(message1, "%d" , temp);  
+        
+         //writeString(10, 10, message1, WHITE, BLACK); //write temp starting from pixel at x=28 y=32
+         
+        
+         sprintf(message2, "%d" , acc_x);  
+        
+         writeString(10, 20, message2, WHITE, BLACK);  
+         
+         sprintf(message3, "%d" , acc_y);   
+        
+         writeString(10, 30, message3, WHITE, BLACK);
+         
+         sprintf(message4, "%d" , gyro_x);    
+        
+         writeString(10, 40, message4, WHITE, BLACK); 
+         
+         sprintf(message5, "%d" , gyro_y); 
+        
+         writeString(10, 50, message5, WHITE, BLACK); 
+         
+         drawBarV(64, 80, -15, YELLOW, BLUE, 5, 140, 6000); //draw progress bar starting from pixel at x=13 y=80
+         
+         drawBarO(64, 80, -10, YELLOW, BLUE, 5, 108, 6000); //draw progress bar starting from pixel at x=13 y=80
+                
+          
+        }
     }
 }
