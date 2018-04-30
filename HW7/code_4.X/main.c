@@ -74,24 +74,25 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
     
     
     //function to draw bars on the LCD
-    void drawBarO(unsigned short x, unsigned short y, signed short n1, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, unsigned int n1max){
+    void drawBarO(unsigned short x, unsigned short y, signed short n1o, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, signed short n1max){
        
         unsigned short ni1=0;
         unsigned short ni2=0;
         unsigned short yi=0;
         signed short length_max_v = length/2;
+        signed short n1 = n1o/n1max;
         
         for(yi=0; yi<=width; yi++){ //loop over length of the bar
             
             if(n1>0){
-                 for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                 for (ni2=0; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x-ni2, y+yi, color_off);
                       }  
-                if (n1<length_max_v){
+                if (n1<=length_max_v){
                     for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
                      LCD_drawPixel(x+ni1, y+yi, color_on);
                     }
-                     for (ni2=n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     for (ni2=n1; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x+ni2, y+yi, color_off);
                       }     
                      }
@@ -106,14 +107,14 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
             
            
             if(n1<0){
-                for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                for (ni2=0; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x+ni2, y+yi, color_off);
                       } 
-                if (-n1<length_max_v){
+                if (-n1<=length_max_v){
                     for (ni1=0; ni1<=-n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
                      LCD_drawPixel(x-ni1, y+yi, color_on);
                     }
-                     for (ni2=-n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     for (ni2=-n1; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x-ni2, y+yi, color_off);
                      }
                      }
@@ -130,24 +131,25 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
         }
     }
     
-    void drawBarV(unsigned short x, unsigned short y, signed short n1, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, unsigned int n1max){
+    void drawBarV(unsigned short x, unsigned short y, signed short n1o, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, signed short n1max){
        
         unsigned short ni1=0;
         unsigned short ni2=0;
         unsigned short xi=0;
         signed short length_max_v = length/2;
+        signed short n1 = n1o/n1max;
         
-        for(xi=0; xi<=width; xi++){ //loop over length of the bar
+        for(xi=0; xi<=width; xi++){ //loop over width of the bar
             
             if(n1>0){
-                 for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
-                     LCD_drawPixel(x-xi, y+ni2, color_off);
+                 for (ni2=0; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     LCD_drawPixel(x+xi, y-ni2, color_off);
                       }  
                 if (n1<length_max_v){
                     for (ni1=0; ni1<=n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
                      LCD_drawPixel(x+xi, y+ni1, color_on);
                     }
-                     for (ni2=n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     for (ni2=n1; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x+xi, y+ni2, color_off);
                       }     
                      }
@@ -162,14 +164,14 @@ void writeString(unsigned short x, unsigned short y, unsigned char* words, unsig
             
            
             if(n1<0){
-                for (ni2=0; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                for (ni2=0; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x+xi, y+ni2, color_off);
                       } 
-                if (-n1<length_max_v){
+                if (-n1<=length_max_v){
                     for (ni1=0; ni1<=-n1 ; ni1++){ //loop over n1 values of n (color on of the bar)
                      LCD_drawPixel(x+xi, y-ni1, color_on);
                     }
-                     for (ni2=-n1; ni2<length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
+                     for (ni2=-n1; ni2<=length_max_v ; ni2++){ //loop over n2 values of n (color off of the bar background)
                      LCD_drawPixel(x+xi, y-ni2, color_off);
                      }
                      }
@@ -306,35 +308,43 @@ int main() {
         read_multiple_i2c(0b1101011,0x20,data,14); //read the seven consecutive registers indicating temperature, acceleration in xyz, and angular velocity in xyz
          
         //signed short temp = data[1]<< 8 | data [0]; //temperature is given by two 8 bits number, store the second one, then shift on by 8 bits and store the first one
-        signed short acc_x = data[3]<< 8 | data [2];
-        signed short acc_y = data[5]<< 8 | data [4];
-        signed short gyro_x = data[9]<< 8 | data [8];
-        signed short gyro_y = data[12]<< 8 | data [11];
+        signed short gyro_x = data[3]<< 8 | data [2];
+        signed short gyro_y = data[5]<< 8 | data [4];
+        signed short acc_x = data[9]<< 8 | data [8];
+        signed short acc_y = data[11]<< 8 | data [10];
          
          //sprintf(message1, "%d" , temp);  
         
          //writeString(10, 10, message1, WHITE, BLACK); //write temp starting from pixel at x=28 y=32
          
-        
-         sprintf(message2, "%d" , acc_x);  
-        
+        if(abs(acc_x)<1000){
+         sprintf(message2, "Ax %d   " , acc_x);  
+        }
+        else{
+            sprintf(message2, "Ax %d " , acc_x); 
+        }
          writeString(10, 20, message2, WHITE, BLACK);  
          
-         sprintf(message3, "%d" , acc_y);   
+         if(abs(acc_y)<1000){
+         sprintf(message3, "Ay %d   " , acc_y);   
+         }
+         else{
+          sprintf(message3, "Ay %d " , acc_y);    
+         }
         
          writeString(10, 30, message3, WHITE, BLACK);
          
-         sprintf(message4, "%d" , gyro_x);    
+         sprintf(message4, "Gx %d    " , gyro_x);    
         
          writeString(10, 40, message4, WHITE, BLACK); 
          
-         sprintf(message5, "%d" , gyro_y); 
+         sprintf(message5, "Gy %d    " , gyro_y); 
         
          writeString(10, 50, message5, WHITE, BLACK); 
          
-         drawBarV(64, 80, -15, YELLOW, BLUE, 5, 140, 6000); //draw progress bar starting from pixel at x=13 y=80
+         drawBarV(64, 80, acc_y, YELLOW, BLUE, 5, 140, 228); //draw progress bar starting from pixel at x=13 y=80
          
-         drawBarO(64, 80, -10, YELLOW, BLUE, 5, 108, 6000); //draw progress bar starting from pixel at x=13 y=80
+         drawBarO(64, 80, acc_x, YELLOW, BLUE, 5, 108, 296); //draw progress bar starting from pixel at x=13 y=80
                 
           
         }
