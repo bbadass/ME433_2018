@@ -68,10 +68,10 @@ int main() {
         LATAbits.LATA4 = 0; //switch the LED off (set the output of pin A4 to low)
         }
                  
-         if(_CP0_GET_COUNT()>12000){ //with a 20Hz frequency 
+         if(_CP0_GET_COUNT()>12000){ //with a 20Hz frequency (remember the core timer runs at half the sysclk))
              LATAbits.LATA4 = ! LATAbits.LATA4; //make the LED blink (change the output of pin A4 from high to low or viceversa)
               _CP0_SET_COUNT(0); //restart counting
          }
-	// remember the core timer runs at half the sysclk
+	 
     }
 }
