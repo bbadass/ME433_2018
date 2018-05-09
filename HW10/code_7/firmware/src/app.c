@@ -64,7 +64,15 @@ uint8_t APP_MAKE_BUFFER_DMA_READY dataOut[APP_READ_BUFFER_SIZE];
 uint8_t APP_MAKE_BUFFER_DMA_READY readBuffer[APP_READ_BUFFER_SIZE];
 int len, i = 0;
 int startTime = 0;
-signed short m_z [100]; //array that will contain the values of the z acceleration (to then average over for maf)
+signed short a_z [100]; //array that will contain the values of the z acceleration (to then average over for maf and fir)
+signed short old_acc_z = 0;
+float b1=0.0338; //parameters for FIR filter, with values picked using fir1 with a cutoff frequency of 5 Hz (sampling at 100 Hz)
+                float b2=0.2401;
+                float b3=0.4521;
+                float b4=0.2401;
+                float b5=0.0338;
+                
+
     
 
     
@@ -647,7 +655,7 @@ void APP_Tasks(void) {
 
 
                 if (appData.readBuffer[0] == 'r') { //if the letter r is read by the computer
-                    aa = 1;
+                    aa = 1;//set the variable that is gonna be the condition for printing to 'on'
                 }
 
 
@@ -669,7 +677,7 @@ void APP_Tasks(void) {
             /* Check if a character was received or a switch was pressed.
              * The isReadComplete flag gets updated in the CDC event handler. */
 
-            if (appData.isReadComplete || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 100)) {
+            if (appData.isReadComplete || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 100)) {//read/write at 100Hz
                 appData.state = APP_STATE_SCHEDULE_WRITE;
             }
 
@@ -700,12 +708,15 @@ void APP_Tasks(void) {
                 signed short acc_y = data[11] << 8 | data [10];
                 signed short acc_z = data[13] << 8 | data [12];
                 signed short maf_z = 0;
+                signed short fir_z = 0;
+                signed short iir_z = 0;
                 
                 
                 //sprintf(message1, "%d" , temp);  
 
                 //writeString(10, 10, message1, WHITE, BLACK); //write temp starting from pixel at x=28 y=32
 
+                //output to LCD
                 if (abs(acc_x) < 1000) {
                     sprintf(message2, "Ax %d   ", acc_x);
                 } else {
@@ -729,31 +740,49 @@ void APP_Tasks(void) {
 
                 writeString(10, 50, message5, WHITE, BLACK);
 
-                m_z[i]=acc_z;
                 
-                if (i<=2){
-                maf_z=acc_z;
+                //MAF filter
+                a_z[i]=acc_z;//put acceleration values into buffer
+                
+                if (i<=2){//first two times just set filter to same value as acceleration
+                maf_z=a_z[i];
                 }
-                else{
-                    maf_z=(m_z[i-2]+m_z[i-1]+m_z[i])/3;
+                else{//then start averaging
+                    maf_z=(a_z[i-2]+a_z[i-1]+a_z[i])/3;
                 } 
+              
                 
-                len = sprintf(dataOut, "%d AzRAW %d AzMAF %d \r\n", i, acc_z, maf_z);
+                //IIR filter
+                iir_z=0.8*old_acc_z+0.2*acc_z;
+                old_acc_z=acc_z;
                 
+                
+                //FIR filter                
+                if(i<=4){//first five times just set filter to same value as acceleration (lazy option)
+                    fir_z=a_z[i];
+                }
+                else{//then start averaging
+                fir_z=(a_z[i]*b1+a_z[i-1]*b2+a_z[i-2]*b3+a_z[i-3]*b4+a_z[i-4]*b5);
+                }
+                
+                //output to computer screen
+                len = sprintf(dataOut, "%d AzRAW %d AzMAF %d AzFIR %d AzIIR %d \r\n", i, acc_z, maf_z, fir_z, iir_z);
+               
             i++;
             }
-            else {
+            else {//print nothing to screen if previous condition not met (necessary statement, otherwise it's gonna keep printing the last value)
                 len = 1;
                 dataOut[0] = 0;
             }
 
-            if (i > 100) {
-                aa = 0;
-                i=0;
+            if (i > 100) {//stop after 100 values have been printed to the screen 
+                aa = 0; //reset the variable that indicates if 'r' has been pressed to 'off'
+                i=0; //reset the counting variable
+                old_acc_z=0;//reset old acceleration
                 int k=0;
                 for(k=0;k<100;k++){
-                        m_z[k]=0; //initialize array to zero
-   }
+                        a_z[k]=0; //reinitialize buffer array to zero
+                 }
             }
             
             if (appData.isReadComplete) {
