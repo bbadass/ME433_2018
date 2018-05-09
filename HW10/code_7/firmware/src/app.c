@@ -66,11 +66,11 @@ int len, i = 0;
 int startTime = 0;
 signed short a_z [100]; //array that will contain the values of the z acceleration (to then average over for maf and fir)
 signed short old_acc_z = 0;
-float b1=0.0338; //parameters for FIR filter, with values picked using fir1 with a cutoff frequency of 5 Hz (sampling at 100 Hz)
-                float b2=0.2401;
-                float b3=0.4521;
-                float b4=0.2401;
-                float b5=0.0338;
+float b1=0.0457; //parameters for FIR filter, with values picked using fir1 with a cutoff frequency of 5 Hz (sampling at 100 Hz)
+float b2=0.4543;
+float b3=0.4543;
+float b4=0.0457;
+
                 
 
     
@@ -744,25 +744,25 @@ void APP_Tasks(void) {
                 //MAF filter
                 a_z[i]=acc_z;//put acceleration values into buffer
                 
-                if (i<=2){//first two times just set filter to same value as acceleration
+                if (i<=4){//first two times just set filter to same value as acceleration
                 maf_z=a_z[i];
                 }
                 else{//then start averaging
-                    maf_z=(a_z[i-2]+a_z[i-1]+a_z[i])/3;
+                    maf_z=(a_z[i-4]+a_z[i-3]+a_z[i-2]+a_z[i-1]+a_z[i])/5;
                 } 
               
                 
                 //IIR filter
-                iir_z=0.8*old_acc_z+0.2*acc_z;
+                iir_z=0.5*old_acc_z+0.5*acc_z;
                 old_acc_z=acc_z;
                 
                 
                 //FIR filter                
-                if(i<=4){//first five times just set filter to same value as acceleration (lazy option)
+                if(i<=3){//first five times just set filter to same value as acceleration (lazy option)
                     fir_z=a_z[i];
                 }
                 else{//then start averaging
-                fir_z=(a_z[i]*b1+a_z[i-1]*b2+a_z[i-2]*b3+a_z[i-3]*b4+a_z[i-4]*b5);
+                fir_z=(a_z[i]*b1+a_z[i-1]*b2+a_z[i-2]*b3+a_z[i-3]*b4);
                 }
                 
                 //output to computer screen
