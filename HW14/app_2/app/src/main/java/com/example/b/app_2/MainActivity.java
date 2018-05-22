@@ -171,6 +171,10 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String sendString = String.valueOf(myControl.getProgress()) + '\n';
+                try {
+                    sPort.write(sendString.getBytes(), 10); // 10 is the timeout
+                } catch (IOException e) { }
                 myTextView2.setText("value on click is "+myControl.getProgress());
             }
         });
