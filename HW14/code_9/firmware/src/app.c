@@ -64,6 +64,10 @@ uint8_t APP_MAKE_BUFFER_DMA_READY dataOut[APP_READ_BUFFER_SIZE];
 uint8_t APP_MAKE_BUFFER_DMA_READY readBuffer[APP_READ_BUFFER_SIZE];
 int len, i = 0;
 int startTime = 0;
+char rx[64]; // the raw data
+int rxPos = 0; // how much data has been stored
+int gotRx = 0; // the flag
+int rxVal = 0; // a place to store the int that was received
 
 // *****************************************************************************
 /* Application Data
@@ -84,152 +88,6 @@ APP_DATA appData;
 // Section: Application Callback Functions
 // *****************************************************************************
 // *****************************************************************************
-
-void writeCharacter(unsigned short x, unsigned short y, char letter, unsigned short color_on, unsigned short color_off) {
-
-    unsigned short xi = 0;
-    unsigned short yi = 0;
-
-    for (xi = 0; xi < 5; xi++) { //loop over the five pixels (in x) per character
-
-        unsigned char pixels = ASCII[letter - 0x20][xi];
-
-        for (yi = 0; yi < 8; yi++) { //loop over bits of each character (8 pixels in y)
-            if ((pixels >> yi) & 1) { // if the yith bit of the ascii (shift back by yi) is on, turn the pixel on
-                LCD_drawPixel(x + xi, y + yi, color_on);
-            } else { // if the yith bit of the ascii (shift back by yi) is off, color the pixel of the off color
-                LCD_drawPixel(x + xi, y + yi, color_off);
-            }
-        }
-    }
-
-}
-
-//function to write messages composed of multiple characters on the LCD
-
-void writeString(unsigned short x, unsigned short y, unsigned char* words, unsigned short color_on, unsigned short color_off) {
-
-    unsigned int i = 0;
-
-    while (words[i]) { //run until there is a character, which works because sprintf has a null zero as its last character 
-        writeCharacter(x + 5 * i, y, words[i], color_on, color_off); //shift by 5 pixels per letter
-        i++;
-    }
-
-}
-
-
-//function to draw bars on the LCD
-
-void drawBarO(unsigned short x, unsigned short y, signed short n1o, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, signed short n1max) {
-
-    unsigned short ni1 = 0;
-    unsigned short ni2 = 0;
-    unsigned short yi = 0;
-    signed short length_max_v = length / 2;
-    signed short n1 = n1o / n1max;
-
-    for (yi = 0; yi <= width; yi++) { //loop over length of the bar
-
-        if (n1 > 0) {
-            for (ni2 = 0; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                LCD_drawPixel(x - ni2, y + yi, color_off);
-            }
-            if (n1 <= length_max_v) {
-                for (ni1 = 0; ni1 <= n1; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + ni1, y + yi, color_on);
-                }
-                for (ni2 = n1; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                    LCD_drawPixel(x + ni2, y + yi, color_off);
-                }
-            }
-            else {
-                for (ni1 = 0; ni1 <= length_max_v; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + ni1, y + yi, color_on);
-                }
-            }
-
-        }
-
-
-        if (n1 < 0) {
-            for (ni2 = 0; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                LCD_drawPixel(x + ni2, y + yi, color_off);
-            }
-            if (-n1 <= length_max_v) {
-                for (ni1 = 0; ni1 <= -n1; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x - ni1, y + yi, color_on);
-                }
-                for (ni2 = -n1; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                    LCD_drawPixel(x - ni2, y + yi, color_off);
-                }
-            }
-            else {
-                for (ni1 = 0; ni1 <= length_max_v; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x - ni1, y + yi, color_on);
-                }
-            }
-        }
-
-
-
-    }
-}
-
-void drawBarV(unsigned short x, unsigned short y, signed short n1o, unsigned short color_on, unsigned short color_off, unsigned int width, unsigned int length, signed short n1max) {
-
-    unsigned short ni1 = 0;
-    unsigned short ni2 = 0;
-    unsigned short xi = 0;
-    signed short length_max_v = length / 2;
-    signed short n1 = n1o / n1max;
-
-    for (xi = 0; xi <= width; xi++) { //loop over width of the bar
-
-        if (n1 > 0) {
-            for (ni2 = 0; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                LCD_drawPixel(x + xi, y - ni2, color_off);
-            }
-            if (n1 < length_max_v) {
-                for (ni1 = 0; ni1 <= n1; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + xi, y + ni1, color_on);
-                }
-                for (ni2 = n1; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                    LCD_drawPixel(x + xi, y + ni2, color_off);
-                }
-            }
-            else {
-                for (ni1 = 0; ni1 <= length_max_v; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + xi, y + ni1, color_on);
-                }
-            }
-
-        }
-
-
-        if (n1 < 0) {
-            for (ni2 = 0; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                LCD_drawPixel(x + xi, y + ni2, color_off);
-            }
-            if (-n1 <= length_max_v) {
-                for (ni1 = 0; ni1 <= -n1; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + xi, y - ni1, color_on);
-                }
-                for (ni2 = -n1; ni2 <= length_max_v; ni2++) { //loop over n2 values of n (color off of the bar background)
-                    LCD_drawPixel(x + xi, y - ni2, color_off);
-                }
-            }
-            else {
-                for (ni1 = 0; ni1 <= length_max_v; ni1++) { //loop over n1 values of n (color on of the bar)
-                    LCD_drawPixel(x + xi, y - ni1, color_on);
-                }
-            }
-        }
-
-
-
-    }
-}
 
 void write_i2c(unsigned char add, unsigned char reg, unsigned char val) {
     i2c_master_start(); //begin the start sequence
@@ -634,6 +492,7 @@ void APP_Tasks(void) {
 
             appData.state = APP_STATE_WAIT_FOR_READ_COMPLETE;
             if (appData.isReadComplete == true) {
+                
                 appData.isReadComplete = false;
                 appData.readTransferHandle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
 
@@ -642,8 +501,23 @@ void APP_Tasks(void) {
                         APP_READ_BUFFER_SIZE);
 
 
-                if (appData.readBuffer[0] == 'r') { //if the letter r is read by the computer
-                    aa = 1;
+                int ii = 0;
+                // loop thru the characters in the buffer
+                while (appData.readBuffer[ii] != 0) {
+                    // if you got a newline
+                    if (appData.readBuffer[ii] == '\n' || appData.readBuffer[ii] == '\r') {
+                        rx[rxPos] = 0; // end the array
+                        sscanf(rx, "%d", &rxVal); // get the int out of the array
+                        gotRx = 1; // set the flag
+                        break; // get out of the while loop
+                    } else if (appData.readBuffer[ii] == 0) {
+                        break; // there was no newline, get out of the while loop
+                    } else {
+                        // save the character into the array
+                        rx[rxPos] = appData.readBuffer[ii];
+                        rxPos++;
+                        ii++;
+                    }
                 }
 
 
@@ -665,7 +539,7 @@ void APP_Tasks(void) {
             /* Check if a character was received or a switch was pressed.
              * The isReadComplete flag gets updated in the CDC event handler. */
 
-            if (appData.isReadComplete || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 5)) {
+            if (gotRx || _CP0_GET_COUNT() - startTime > (48000000 / 2 / 5)) {
                 appData.state = APP_STATE_SCHEDULE_WRITE;
             }
 
@@ -685,19 +559,22 @@ void APP_Tasks(void) {
             appData.isWriteComplete = false;
             appData.state = APP_STATE_WAIT_FOR_WRITE_COMPLETE;
 
-            if (aa == 1) {//if the letter r is recieved
-                
-                len = sprintf(dataOut, "%d \r\n", i);
-            i++;
-            }
-            else {
-                len = 1;
-                dataOut[0] = 0;
-            }
-
-            if (i > 100) {
-                aa = 0;
-                i=0;
+            if (gotRx) {
+                len = sprintf(dataOut, "got: %d\r\n", rxVal);
+                i++;
+                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+                        &appData.writeTransferHandle,
+                        dataOut, len,
+                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+                rxPos = 0;
+                gotRx = 0;
+            } else {
+                len = sprintf(dataOut, "%d\r\n", i);
+                i++;
+                USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
+                        &appData.writeTransferHandle, dataOut, len,
+                        USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
+                startTime = _CP0_GET_COUNT();
             }
             
             if (appData.isReadComplete) {
