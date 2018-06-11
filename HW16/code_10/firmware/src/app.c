@@ -78,6 +78,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 APP_DATA appData;
 
+
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Application Callback Functions
@@ -142,6 +144,26 @@ void APP_Initialize ( void )
     OC1CONbits.ON = 1; // turn on OC1
     OC4CONbits.ON = 1; // turn on OC4
     
+     //encoder
+    T5CKRbits.T5CKR = 0b0100; // B9 is read by T5CK
+    T3CKRbits.T3CKR = 0b0100; // B8 is read by T3CK
+    
+    T5CONbits.TCS = 1; // count external pulses
+    PR5 = 0xFFFF; // enable counting to max value of 2^16 - 1
+    TMR5 = 0; // set the timer count to zero
+    T5CONbits.ON = 1; // turn Timer on and start counting
+    T3CONbits.TCS = 1; // count external pulses
+    PR3 = 0xFFFF; // enable counting to max value of 2^16 - 1
+    TMR3 = 0; // set the timer count to zero
+    T3CONbits.ON = 1; // turn Timer on and start counting
+    
+    T4CONbits.TCKPS = 2; // Timer4 prescaler N=4
+    PR4 = 23999; // 48000000 Hz / 500 Hz / 4 - 1 = 23999 (500Hz from 48MHz clock with 4:1 prescaler)
+    TMR4 = 0; // initial TMR4 count is 0
+    T4CONbits.ON = 1;
+    IPC4bits.T4IP = 4; // priority for Timer 4 
+    IFS0bits.T4IF = 0; // clear interrupt flag for Timer4
+    IEC0bits.T4IE = 1; // enable interrupt for Timer4
     
 }
 
@@ -176,8 +198,6 @@ void APP_Tasks ( void )
 
         case APP_STATE_SERVICE_TASKS:
         {
-        OC1RS = 2399;
-        OC4RS = 2399;
             break;
         }
 

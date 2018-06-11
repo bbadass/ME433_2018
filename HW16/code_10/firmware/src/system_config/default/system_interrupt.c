@@ -63,9 +63,39 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "app.h"
 #include "system_definitions.h"
 
+
+
 void __ISR(_TIMER_4_VECTOR, IPL4SOFT) Timer4ISR(void) {
   // code for PI control goes here
-
+    float speed_1=(220/60*700/50)/2 ; //speed of wheel 1: half of maximum speed with 220 rpm max, 700 ticks per rotation, 50 Hz timer
+    float speed_2=(220/60*700/50)/2 ; //speed of wheel 2: half of maximum speed with 220 rpm max, 700 ticks per rotation, 50 Hz timer
+    float error1 = speed_1 - TMR5; //difference between desired speed and measured speed from encoder, wheel 1
+    float error2 = speed_2 - TMR3; //difference between desired speed and measured speed from encoder, wheel 2
+    float kp = 50; //weight of error in change of rotation speed
+        
+    //if there is a difference between the desired speed and the actual speed change the duty cycle 
+    if (error1>0 && (error1*kp)<=2399 ){
+        OC1RS = kp*error1;
+    }
+    if (error2>0 && (error2*kp)<=2399 ){
+        OC4RS = kp*error2;
+    }
+    if ((error1*kp)>2399){
+        OC1RS = 2399;
+    }
+    if ((error2*kp)>2399){
+        OC4RS = 2399;
+    }
+    if (error1<0){
+        OC1RS = 0;
+    }
+    if (error2<0){
+        OC4RS = 0;
+    }
+    
+    TMR3=0;
+    TMR5=0;
+    
   IFS0bits.T4IF = 0; // clear interrupt flag, last line
 }
 // *****************************************************************************
