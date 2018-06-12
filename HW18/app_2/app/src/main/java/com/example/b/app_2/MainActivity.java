@@ -209,7 +209,7 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             int[] pixels = new int[bmp.getWidth()]; // pixels[] is the RGBA data, array whose size is width of image: grab rows of the image and put pixel data into array
             //int startY = k; // which row in the bitmap to analyze to read
-            bmp.getPixels(pixels, 0, bmp.getWidth(), 0, 240, bmp.getWidth(), 1);
+            bmp.getPixels(pixels, 0, bmp.getWidth(), 0, 100, bmp.getWidth(), 1);
 
             sum = 0;
             sum_r = 0;
@@ -231,16 +231,16 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
 
             // update the row
-            bmp.setPixels(pixels, 0, bmp.getWidth(), 0, 240, bmp.getWidth(), 1);
+            bmp.setPixels(pixels, 0, bmp.getWidth(), 0, 100, bmp.getWidth(), 1);
             //}
         }
 
         // draw a circle at some position
         //int pos = 50;
-        canvas.drawCircle(centre_of_mass, 240, 5, paint1); // x position, y position, diameter, color
+        canvas.drawCircle(centre_of_mass, 100, 5, paint1); // x position, y position, diameter, color
 
         // write the pos as text
-        canvas.drawText("CM = " + centre_of_mass, 10, 200, paint1);
+        canvas.drawText("CM = " + centre_of_mass, 10, 150, paint1);
         String sendString = String.valueOf(centre_of_mass) + '\n';
         try {
             sPort.write(sendString.getBytes(), 10); // 10 is the timeout

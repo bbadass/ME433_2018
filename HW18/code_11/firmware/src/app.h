@@ -75,6 +75,16 @@ extern "C" {
     determine the behavior of the application at various times.
 */
 
+    float speed=(220/60*700/50)/2 ; //speed of wheels: half of maximum speed with 220 rpm max, 700 ticks per rotation, 50 Hz timer
+    float MAX_DUTY=1200;
+    float error; 
+    float left;
+    float right;
+    int line_lost = 0;
+    int turn_left=0;
+    int rxVal = 0; // a place to store the int that was received
+
+    
 typedef enum
 {
 	/* Application's state machine's initial state. */

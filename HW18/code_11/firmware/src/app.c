@@ -65,7 +65,6 @@ int startTime = 0;
 char rx[64]; // the raw data
 int rxPos = 0; // how much data has been stored
 int gotRx = 0; // the flag
-int rxVal = 0; // a place to store the int that was received
 
 // *****************************************************************************
 /* Application Data
@@ -479,9 +478,14 @@ void APP_Tasks(void) {
                         sscanf(rx, "%d", &rxVal); // get the int out of the array
                         gotRx = 1; // set the flag
                         break; // get out of the while loop
-                    } else {
+                    } else if (appData.readBuffer[ii] == 0) {
                         break; // there was no newline, get out of the while loop
-                    } 
+                    } else {
+                        // save the character into the array
+                        rx[rxPos] = appData.readBuffer[ii];
+                        rxPos++;
+                        ii++;
+                    }
                 }
 
 
@@ -531,25 +535,22 @@ void APP_Tasks(void) {
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
                 rxPos = 0;
                 gotRx = 0;
-                error = rxVal - 240; // 240 means the dot is in the middle of the screen
-                    if (error<0) { // slow down the left motor to steer to the left
-                        error  = -error;
-                        left = MAX_DUTY - kp*error;
-                        right = MAX_DUTY;
-                        if (left < 0){
-                            left = 0;
+                if(rxVal<50 || rxVal>370){//if the COM is at position zero then no red is being seen and the line is lost
+                    line_lost=1;
+                    i++;  
+                    turn_left=1;//turn left for a while
+                    if(i>=100){
+                        turn_left=0;//turn right for a while
+                        if(i==200){
+                            i=0; 
                         }
                     }
-                    else { // slow down the right motor to steer to the right
-                        right = MAX_DUTY - kp*error;
-                        left = MAX_DUTY;
-                        if (right<0) {
-                            right = 0;
-                        }
-                    }
-                    OC1RS = left;
-                    OC4RS = right;
+                }
+                else{
+                    line_lost=0;
+                }
             } else {
+                len = sprintf(dataOut, "%d\r\n", i);
                 USB_DEVICE_CDC_Write(USB_DEVICE_CDC_INDEX_0,
                         &appData.writeTransferHandle, dataOut, len,
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
