@@ -76,7 +76,8 @@ extern "C" {
 */
 
     float speed=(220/60*700/50)/2 ; //speed of wheels: half of maximum speed with 220 rpm max, 700 ticks per rotation, 50 Hz timer
-    float MAX_DUTY=1200;
+    float MAX_DUTY=1250;
+    float MAX_DUTY_left=1250;
     float error; 
     float left;
     float right;

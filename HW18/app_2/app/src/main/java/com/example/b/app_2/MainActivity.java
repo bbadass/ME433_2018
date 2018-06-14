@@ -63,13 +63,12 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     private Paint paint1 = new Paint();
     private TextView mTextView;
 
-    ScrollView myScrollView;
-    TextView myTextView3;
-
     SeekBar myControl;
     SeekBar myControl2;
     SeekBar myControl3;
 
+   /* ScrollView myScrollView;
+    TextView myTextView3;*/
 
     static long prevtime = 0; // for FPS calculation
 
@@ -80,9 +79,6 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        myScrollView = (ScrollView) findViewById(R.id.ScrollView01);
-        myTextView3 = (TextView) findViewById(R.id.textView03);
 
         manager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
@@ -96,6 +92,9 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             mTextureView = (TextureView) findViewById(R.id.textureview);
             mTextureView.setSurfaceTextureListener(this);
+
+            /*myScrollView = (ScrollView) findViewById(R.id.ScrollView01);
+            myTextView3 = (TextView) findViewById(R.id.textView03);*/
 
             myControl = (SeekBar) findViewById(R.id.seek1);
             myControl2 = (SeekBar) findViewById(R.id.seek2);
@@ -145,7 +144,8 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
     int threshblue = 0; // comparison value for blue
     int sum = 0; //sum of pixel colors
     int sum_r = 0; //sum of pixel colors times the radius
-    int centre_of_mass = 0; //reddest point in the line
+    int centre_of_mass; //reddest point in the line
+    int right; //flag to see which direction the thingy went
 
     // the important function
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
@@ -203,18 +203,23 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
             }
         });
 
+        //int lala=0;
         final Canvas c = mSurfaceHolder.lockCanvas();
+       /* String sendString = String.valueOf(lala) + '\n';
+        try {
+            sPort.write(sendString.getBytes(), 10); // 10 is the timeout
+        } catch (IOException e) { }*/
+
         if (c != null) {
             //for (int k=bmp.getHeight()/2; k < bmp.getHeight()/2+1; k++) {//loop over rows of pixels
 
             int[] pixels = new int[bmp.getWidth()]; // pixels[] is the RGBA data, array whose size is width of image: grab rows of the image and put pixel data into array
             //int startY = k; // which row in the bitmap to analyze to read
             bmp.getPixels(pixels, 0, bmp.getWidth(), 0, 100, bmp.getWidth(), 1);
-
             sum = 0;
             sum_r = 0;
             // in the row find the centre of mass of red
-            for (int i = 0; i < bmp.getWidth(); i++) {//loop over every element of pixels
+            for (int i = 0; i < bmp.getWidth(); i=i+2) {//loop over every element of pixels
                 if  (red(pixels[i])-green(pixels[i]) > threshgreen && red(pixels[i])-green(pixels[i]) > threshblue && red(pixels[i])>threshred) { //adjust based on how  red is the definition of red
                     pixels[i] = rgb(1, 1, 1); // over write the pixel with pure black
                     sum = sum + (red(pixels[i]) + green(pixels[i]) + blue(pixels[i]));
@@ -225,9 +230,23 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
             if (sum>5) {
                 centre_of_mass = (sum_r / sum);
+                if(centre_of_mass>470){
+                    right=1;
+                }
+                else if(centre_of_mass<30){
+                    right=0;
+                }
+                else {
+                    right=2;
+                }
             }
             else{
-                centre_of_mass = 0;
+                if(right==1) {
+                    centre_of_mass = 500;
+                }
+                else if(right==0){
+                    centre_of_mass = 0;
+                }
             }
 
             // update the row
@@ -240,19 +259,23 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
         canvas.drawCircle(centre_of_mass, 100, 5, paint1); // x position, y position, diameter, color
 
         // write the pos as text
-        canvas.drawText("CM = " + centre_of_mass, 10, 150, paint1);
+        canvas.drawText("CM = " + centre_of_mass, 10, 120, paint1);
         String sendString = String.valueOf(centre_of_mass) + '\n';
         try {
             sPort.write(sendString.getBytes(), 10); // 10 is the timeout
         } catch (IOException e) { }
+
         c.drawBitmap(bmp, 0, 0, null);
         mSurfaceHolder.unlockCanvasAndPost(c);
 
         // calculate the FPS to see how fast the code is running
         long nowtime = System.currentTimeMillis();
         long diff = nowtime - prevtime;
-        mTextView.setText("FPS " + 1000 / diff);
-        prevtime = nowtime;
+        if(diff!=0) {
+            mTextView.setText("FPS " + 1000 / diff);
+            prevtime = nowtime;
+        }
+
     }
 
     private final SerialInputOutputManager.Listener mListener =
@@ -353,15 +376,14 @@ public class MainActivity extends Activity implements TextureView.SurfaceTexture
 
     private void updateReceivedData(byte[] data) {
         //do something with received data
-
-        //for displaying:
-        String rxString = null;
+        /*String rxString = null;
         try {
             rxString = new String(data, "UTF-8"); // put the data you got into a string
             myTextView3.append(rxString);
             myScrollView.fullScroll(View.FOCUS_DOWN);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-        }
+        }*/
+
     }
 }

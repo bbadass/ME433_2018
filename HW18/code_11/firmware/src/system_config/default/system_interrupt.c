@@ -71,6 +71,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 void __ISR(_TIMER_4_VECTOR, IPL4SOFT) Timer4ISR(void) {
 
     int kpa=50; //how much the error affects the speed
+    int kpb=50;
     
     error = rxVal - 240; // displacement of COM (180 means the dot is in the middle of the screen)
     
@@ -105,37 +106,37 @@ void __ISR(_TIMER_4_VECTOR, IPL4SOFT) Timer4ISR(void) {
     //steering from phone
     if(line_lost==1){//wiggle around at half the speed if the line is lost
         if(turn_left==1){
-            left=800;
+            left=MAX_DUTY_left;
             right=0;
         }
         else{
-            right=800;
+            right=MAX_DUTY;
             left=0;
         }
     }
-    else {if (error>10) { // slow down the left motor to steer to the left
-            left = MAX_DUTY - kpa*error;
-            right = MAX_DUTY;
+    else{if (error>20) { // slow down the left motor to steer to the left
+            left = MAX_DUTY_left - kpa*error;
+            right = MAX_DUTY+20;
             if (left < 0){
                 left = 0;
             }
         }
-        else if (error<-10) { // slow down the right motor to steer to the right
+        else if (error<-20) { // slow down the right motor to steer to the right
             error  = -error;
-            right = MAX_DUTY - kpa*error;
-            left = MAX_DUTY;
+            right = MAX_DUTY - kpb*error;
+            left = MAX_DUTY_left;
             if (right<0) {
                     right = 0;
             }
         }
         else{ //if the com is within a boundary just go straight and faster
             right = MAX_DUTY;
-            left = MAX_DUTY;
+            left = MAX_DUTY_left;
         }
-    }
     
-    OC4RS = right;
-    OC1RS = left;
+    }
+    OC1RS = right;
+    OC4RS = left;
     
     //TMR3=0;
     //TMR5=0;

@@ -106,9 +106,7 @@
                 android:secondaryProgress="80" />
 
         </LinearLayout>
-
-
-    <ScrollView
+    <!--<ScrollView
         android:id="@+id/ScrollView01"
         android:layout_width="wrap_content"
         android:layout_height="50dip"
@@ -126,6 +124,6 @@
             android:background="@android:color/holo_green_light"
             />
 
-    </ScrollView>
+    </ScrollView>-->
 
 </android.support.constraint.ConstraintLayout>

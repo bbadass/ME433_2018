@@ -535,13 +535,24 @@ void APP_Tasks(void) {
                         USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
                 rxPos = 0;
                 gotRx = 0;
-                if(rxVal<50 || rxVal>370){//if the COM is at position zero then no red is being seen and the line is lost
+                 if(rxVal==500){//if the COM is at position zero then no red is being seen and the line is lost
+                    line_lost=1;
+                    i++;  
+                    turn_left=0;//turn left for a while
+                    if(i>=15){
+                        turn_left=1;//turn right for a while
+                        if(i==25){
+                            i=0; 
+                        }
+                    }
+                }
+                 else if(rxVal==0){//if the COM is at position zero then no red is being seen and the line is lost
                     line_lost=1;
                     i++;  
                     turn_left=1;//turn left for a while
-                    if(i>=100){
+                    if(i>=15){
                         turn_left=0;//turn right for a while
-                        if(i==200){
+                        if(i==25){
                             i=0; 
                         }
                     }
